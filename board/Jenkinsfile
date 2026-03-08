@@ -88,7 +88,14 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'aws-jenkins-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     dir('board') {
                         sh '''
-                          aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
+                          if aws --version 2>&1 | grep -q "aws-cli/1"; then
+                            curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+                            unzip -oq /tmp/awscliv2.zip -d /tmp
+                            sudo /tmp/aws/install --update
+                          fi
+                          /usr/local/bin/aws --version || aws --version
+                          /usr/local/bin/aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
+                          sed -i 's#command: aws#command: /usr/local/bin/aws#g' /home/ubuntu/.kube/config || true
                           sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1beta1#g' /home/ubuntu/.kube/config || true
                           sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1#g' /home/ubuntu/.kube/config || true
                           sed "s|IMAGE_PLACEHOLDER|${IMAGE_URI}|g" k8s/deployment-service.yaml > k8s/rendered-deployment.yaml
