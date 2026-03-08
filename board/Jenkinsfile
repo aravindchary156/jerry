@@ -89,7 +89,8 @@ pipeline {
                     dir('board') {
                         sh '''
                           aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
-                          sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1beta1#g' ~/.kube/config
+                          sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1beta1#g' /home/ubuntu/.kube/config || true
+                          sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1#g' /home/ubuntu/.kube/config || true
                           sed "s|IMAGE_PLACEHOLDER|${IMAGE_URI}|g" k8s/deployment-service.yaml > k8s/rendered-deployment.yaml
                           kubectl apply -n ${K8S_NAMESPACE} -f k8s/rendered-deployment.yaml
                           kubectl rollout status -n ${K8S_NAMESPACE} deployment/boardgame-deployment --timeout=180s
