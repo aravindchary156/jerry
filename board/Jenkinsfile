@@ -61,6 +61,14 @@ pipeline {
             }
         }
 
+        stage('AWS Identity Check') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'aws-jenkins-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh 'aws sts get-caller-identity --region ${AWS_REGION}'
+                }
+            }
+        }
+
 
         stage('Push Image To ECR') {
             steps {
