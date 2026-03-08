@@ -88,6 +88,9 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'aws-jenkins-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     dir('board') {
                         sh '''
+                          export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+                          export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+                          export AWS_REGION="${AWS_REGION}"
                           if aws --version 2>&1 | grep -q "aws-cli/1"; then
                             curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
                             unzip -oq /tmp/awscliv2.zip -d /tmp
@@ -101,6 +104,8 @@ pipeline {
                           sed "s|IMAGE_PLACEHOLDER|${IMAGE_URI}|g" k8s/deployment-service.yaml > k8s/rendered-deployment.yaml
                           kubectl apply -n ${K8S_NAMESPACE} -f k8s/rendered-deployment.yaml
                           kubectl rollout status -n ${K8S_NAMESPACE} deployment/boardgame-deployment --timeout=600s || (kubectl get pods -n ${K8S_NAMESPACE} -o wide; kubectl describe deployment boardgame-deployment -n ${K8S_NAMESPACE}; kubectl describe pods -n ${K8S_NAMESPACE} -l app=boardgame; kubectl logs -n ${K8S_NAMESPACE} -l app=boardgame --tail=200; exit 1)
+                          kubectl get pods -n ${K8S_NAMESPACE} -o wide
+                          kubectl get svc -n ${K8S_NAMESPACE}
                         '''
                     }
                 }
