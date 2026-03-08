@@ -5,9 +5,10 @@ resource "aws_instance" "vm" {
   subnet_id                   = aws_subnet.main.id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.main.id]
+  iam_instance_profile        = aws_iam_instance_profile.jenkins_ec2.name
 
   root_block_device {
-    volume_size = 30
+    volume_size = 100
     volume_type = "gp3"
   }
 

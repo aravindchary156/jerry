@@ -47,3 +47,18 @@ output "eks_update_kubeconfig_command" {
   description = "Command to configure kubectl for EKS"
   value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.main.name}"
 }
+
+output "monitoring_namespace" {
+  description = "Kubernetes namespace for monitoring stack"
+  value       = var.install_monitoring_stack ? kubernetes_namespace.monitoring[0].metadata[0].name : ""
+}
+
+output "grafana_service_name" {
+  description = "Grafana service name in monitoring namespace"
+  value       = var.install_monitoring_stack ? "monitoring-grafana" : ""
+}
+
+output "prometheus_service_name" {
+  description = "Prometheus service name in monitoring namespace"
+  value       = var.install_monitoring_stack ? "monitoring-kube-prometheus-prometheus" : ""
+}
