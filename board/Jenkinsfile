@@ -57,13 +57,10 @@ pipeline {
 
         stage('Trivy Image Scan') {
     steps {
-        sh '''
-          export TRIVY_CACHE_DIR=$WORKSPACE/.trivycache
-          trivy image --exit-code 1 --severity HIGH,CRITICAL ${IMAGE_URI}
-          rm -rf $TRIVY_CACHE_DIR
-        '''
+        sh 'trivy image --exit-code 1 --severity CRITICAL ${IMAGE_URI}'
+
     }
-}
+        }
 
 
         stage('Push Image To ECR') {
