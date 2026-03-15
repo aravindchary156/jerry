@@ -12,35 +12,14 @@ resource "aws_instance" "vm" {
     volume_type = "gp3"
   }
 
-  lifecycle {
-    ignore_changes = [instance_type]
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 2
+    http_tokens                 = "required"
   }
 
   tags = {
     Name = "hackathon-vm"
-  }
-
-  depends_on = [
-    aws_internet_gateway.main,
-    aws_route_table_association.main
-  ]
-}
-
-resource "aws_instance" "sonarqube_vm" {
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.sonarqube_instance_type
-  key_name                    = var.ssh_key_name
-  subnet_id                   = aws_subnet.main.id
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.main.id]
-
-  root_block_device {
-    volume_size = 100
-    volume_type = "gp3"
-  }
-
-  tags = {
-    Name = "hackathon-sonarqube-vm"
   }
 
   depends_on = [

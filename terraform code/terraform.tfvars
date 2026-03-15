@@ -2,8 +2,9 @@ aws_region       = "ap-south-1"
 ssh_key_name     = "hackathon-india-key-1"
 private_key_path = "/Users/maravind/.ssh/hackathon-india-key-1.pem"
 
-instance_type           = "t3.micro"
-sonarqube_instance_type = "m7i-flex.large"
+instance_type              = "m7i-flex.large"
+sonarqube_instance_type    = "m7i-flex.large"
+sonarqube_root_volume_size = 80
 
 ecr_repository_name      = "boardgame"
 eks_cluster_name         = "hackathon-eks"

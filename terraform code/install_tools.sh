@@ -36,13 +36,19 @@ tar -xzf /tmp/helm.tar.gz -C /tmp
 sudo install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
 rm -rf /tmp/helm.tar.gz /tmp/linux-amd64
 
-# Run Jenkins as Docker container (avoids apt repo/key issues).
+# Build a Jenkins image that already includes the pipeline tools.
+sudo docker build -t hackathon-jenkins -f /home/ubuntu/jenkins-controller.Dockerfile /home/ubuntu
+
+# Run Jenkins as Docker container with access to the host Docker daemon.
 sudo docker rm -f jenkins >/dev/null 2>&1 || true
 sudo docker volume create jenkins_home >/dev/null
 sudo docker run -d --name jenkins --restart unless-stopped \
+  -u root \
   -p 8080:8080 -p 50000:50000 \
   -v jenkins_home:/var/jenkins_home \
-  jenkins/jenkins:lts-jdk17
+  -v /usr/bin/docker:/usr/bin/docker \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  hackathon-jenkins
 
 # Cleanup to avoid filling small root disks.
 sudo apt clean
