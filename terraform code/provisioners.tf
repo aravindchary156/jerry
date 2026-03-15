@@ -8,19 +8,28 @@ resource "null_resource" "setup_tools" {
 
   depends_on = [aws_instance.vm]
 
-  provisioner "local-exec" {
-    command = "for i in $(seq 1 30); do ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i \"${var.private_key_path}\" ubuntu@${aws_instance.vm.public_ip} 'echo ssh-ready' >/dev/null 2>&1 && exit 0; sleep 10; done; echo 'Timed out waiting for SSH on Jenkins VM' >&2; exit 1"
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    host        = aws_instance.vm.public_ip
+    private_key = file(var.private_key_path)
+    timeout     = "10m"
   }
 
-  provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no -i \"${var.private_key_path}\" \"${path.module}/install_tools.sh\" ubuntu@${aws_instance.vm.public_ip}:/home/ubuntu/install_tools.sh"
+  provisioner "file" {
+    source      = "${path.module}/install_tools.sh"
+    destination = "/home/ubuntu/install_tools.sh"
   }
 
-  provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no -i \"${var.private_key_path}\" \"${path.module}/jenkins-controller.Dockerfile\" ubuntu@${aws_instance.vm.public_ip}:/home/ubuntu/jenkins-controller.Dockerfile"
+  provisioner "file" {
+    source      = "${path.module}/jenkins-controller.Dockerfile"
+    destination = "/home/ubuntu/jenkins-controller.Dockerfile"
   }
 
-  provisioner "local-exec" {
-    command = "ssh -o StrictHostKeyChecking=no -i \"${var.private_key_path}\" ubuntu@${aws_instance.vm.public_ip} 'chmod +x /home/ubuntu/install_tools.sh && sudo /home/ubuntu/install_tools.sh'"
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /home/ubuntu/install_tools.sh",
+      "sudo /home/ubuntu/install_tools.sh",
+    ]
   }
 }
