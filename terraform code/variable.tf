@@ -11,9 +11,15 @@ variable "instance_type" {
 }
 
 variable "sonarqube_instance_type" {
-  description = "EC2 instance type for the dedicated SonarQube VM"
+  description = "EC2 instance type for the dedicated SonarQube server"
   type        = string
-  default     = "t3.small"
+  default     = "m7i-flex.large"
+}
+
+variable "sonarqube_root_volume_size" {
+  description = "Root volume size in GiB for the SonarQube server"
+  type        = number
+  default     = 80
 }
 
 variable "ssh_key_name" {

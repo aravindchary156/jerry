@@ -4,7 +4,6 @@ private_key_path = "/Users/maravind/.ssh/hackathon-india-key-1.pem"
 
 instance_type              = "m7i-flex.large"
 sonarqube_instance_type    = "m7i-flex.large"
-sonarqube_root_volume_size = 80
 
 ecr_repository_name      = "boardgame"
 eks_cluster_name         = "hackathon-eks"

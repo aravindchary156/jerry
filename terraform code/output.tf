@@ -25,7 +25,7 @@ output "ssh_command" {
 
 output "sonarqube_ssh_command" {
   description = "SSH command to connect to SonarQube VM"
-  value       = "ssh -i /path/to/key.pem ubuntu@${aws_instance.sonarqube_vm.public_ip}"
+  value       = "ssh -i ${var.private_key_path} ubuntu@${aws_instance.sonarqube.public_ip}"
 }
 
 output "jenkins_url" {
@@ -35,7 +35,17 @@ output "jenkins_url" {
 
 output "sonarqube_url" {
   description = "External SonarQube URL"
-  value       = "http://${aws_instance.sonarqube_vm.public_ip}:9000"
+  value       = "http://${aws_instance.sonarqube.public_ip}:9000"
+}
+
+output "sonarqube_public_ip" {
+  description = "Public IP of the SonarQube instance"
+  value       = aws_instance.sonarqube.public_ip
+}
+
+output "sonarqube_default_credentials" {
+  description = "Default SonarQube login before you change it"
+  value       = "admin / admin"
 }
 
 output "jenkins_initial_admin_password_command" {
