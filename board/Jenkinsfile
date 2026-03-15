@@ -1,5 +1,7 @@
 pipeline {
-    agent { label 'linux' }
+    agent {
+        label 'built-in'
+    }
 
     triggers {
         githubPush()
@@ -101,22 +103,14 @@ pipeline {
                       if aws --version 2>&1 | grep -q "aws-cli/1"; then
                         curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
                         unzip -oq /tmp/awscliv2.zip -d /tmp
-                        sudo /tmp/aws/install --update
+                        /tmp/aws/install --update
                       fi
                       /usr/local/bin/aws --version || aws --version
-                      /usr/local/bin/aws eks update-nodegroup-config --region ${AWS_REGION} --cluster-name ${EKS_CLUSTER_NAME} --nodegroup-name ${EKS_NODEGROUP_NAME} --scaling-config minSize=2,maxSize=3,desiredSize=2 || true
-                      for i in $(seq 1 30); do
-                        NODEGROUP_STATUS=$(/usr/local/bin/aws eks describe-nodegroup --region ${AWS_REGION} --cluster-name ${EKS_CLUSTER_NAME} --nodegroup-name ${EKS_NODEGROUP_NAME} --query 'nodegroup.status' --output text)
-                        if [ "${NODEGROUP_STATUS}" = "ACTIVE" ]; then
-                          break
-                        fi
-                        echo "Nodegroup status: ${NODEGROUP_STATUS}. Waiting..."
-                        sleep 20
-                      done
+                      echo "Using existing EKS node group capacity for deployment"
                       /usr/local/bin/aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}
-                      sed -i 's#command: aws#command: /usr/local/bin/aws#g' /home/ubuntu/.kube/config || true
-                      sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1beta1#g' /home/ubuntu/.kube/config || true
-                      sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1#g' /home/ubuntu/.kube/config || true
+                      sed -i 's#command: aws#command: /usr/local/bin/aws#g' "${HOME}/.kube/config" || true
+                      sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1beta1#g' "${HOME}/.kube/config" || true
+                      sed -i 's#client.authentication.k8s.io/v1alpha1#client.authentication.k8s.io/v1#g' "${HOME}/.kube/config" || true
                       sed "s|IMAGE_PLACEHOLDER|${IMAGE_URI}|g" k8s/deployment-service.yaml > k8s/rendered-deployment.yaml
                       kubectl apply -n ${K8S_NAMESPACE} -f k8s/rendered-deployment.yaml
                       kubectl delete pod -n ${K8S_NAMESPACE} -l app=boardgame --field-selector=status.phase=Pending --ignore-not-found=true || true
